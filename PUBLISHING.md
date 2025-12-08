@@ -14,7 +14,7 @@ Unlike npm or PyPI, Go modules don't have a central upload process. Instead:
 ## Prerequisites
 
 1. **Public Repository**: Your code must be in a public Git repository
-2. **Module Path**: Must match repository URL (e.g., `github.com/logdot/logdot-go`)
+2. **Module Path**: Must match repository URL (e.g., `github.com/logdot-io/logdot-go`)
 3. **Git Tags**: Use semantic version tags (e.g., `v1.0.0`)
 
 ## Pre-Publish Checklist
@@ -31,7 +31,7 @@ Unlike npm or PyPI, Go modules don't have a central upload process. Instead:
 Check `go.mod`:
 
 ```go
-module github.com/logdot/logdot-go
+module github.com/logdot-io/logdot-go
 
 go 1.21
 ```
@@ -63,7 +63,7 @@ git push origin v1.0.0
 
 **Important**: For v2+, you must update the module path:
 ```go
-module github.com/logdot/logdot-go/v2
+module github.com/logdot-io/logdot-go/v2
 ```
 
 ## Triggering pkg.go.dev Indexing
@@ -73,22 +73,22 @@ After pushing a tag, pkg.go.dev will automatically index your module. To speed t
 ### Option 1: Request via proxy
 
 ```bash
-GOPROXY=proxy.golang.org go list -m github.com/logdot/logdot-go@v1.0.0
+GOPROXY=proxy.golang.org go list -m github.com/logdot-io/logdot-go@v1.0.0
 ```
 
 ### Option 2: Visit the package page
 
-Go to `https://pkg.go.dev/github.com/logdot/logdot-go` - this triggers indexing.
+Go to `https://pkg.go.dev/github.com/logdot-io/logdot-go` - this triggers indexing.
 
 ### Option 3: Import in any Go project
 
 ```bash
-go get github.com/logdot/logdot-go@v1.0.0
+go get github.com/logdot-io/logdot-go@v1.0.0
 ```
 
 ## Verifying Publication
 
-1. Visit [pkg.go.dev/github.com/logdot/logdot-go](https://pkg.go.dev/github.com/logdot/logdot-go)
+1. Visit [pkg.go.dev/github.com/logdot-io/logdot-go](https://pkg.go.dev/github.com/logdot-io/logdot-go)
 2. Check that your version appears in the versions list
 3. Verify documentation is rendered correctly
 
@@ -97,10 +97,10 @@ go get github.com/logdot/logdot-go@v1.0.0
 Users can install with:
 
 ```bash
-go get github.com/logdot/logdot-go@latest
+go get github.com/logdot-io/logdot-go@latest
 
 # Or a specific version
-go get github.com/logdot/logdot-go@v1.0.0
+go get github.com/logdot-io/logdot-go@v1.0.0
 ```
 
 ## Documentation
@@ -133,7 +133,7 @@ If you need to mark a version as broken:
 1. Add a `retract` directive to `go.mod`:
 
 ```go
-module github.com/logdot/logdot-go
+module github.com/logdot-io/logdot-go
 
 go 1.21
 
@@ -183,7 +183,7 @@ jobs:
     steps:
       - name: Trigger module proxy
         run: |
-          curl "https://proxy.golang.org/github.com/logdot/logdot-go/@v/${{ github.ref_name }}.info"
+          curl "https://proxy.golang.org/github.com/logdot-io/logdot-go/@v/${{ github.ref_name }}.info"
 ```
 
 ## Troubleshooting

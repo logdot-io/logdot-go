@@ -1,3 +1,3 @@
-module github.com/logdot/logdot-go
+module github.com/logdot-io/logdot-go
 
 go 1.21

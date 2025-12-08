@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	logdot "github.com/logdot/logdot-go"
+	logdot "github.com/logdot-io/logdot-go"
 )
 
 func loadEnv() error {
