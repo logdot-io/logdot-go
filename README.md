@@ -205,6 +205,94 @@ metricsClient.SendBatch(ctx)
 metricsClient.EndBatch()
 ```
 
+## Auto-Instrumentation (HTTP Middleware)
+
+Automatically log all HTTP requests, errors, and response time metrics with a single middleware wrapper.
+
+### Setup
+
+```go
+logger := logdot.NewLogger("ilog_live_YOUR_API_KEY", "my-service")
+metrics := logdot.NewMetrics("ilog_live_YOUR_API_KEY")
+
+mux := http.NewServeMux()
+mux.HandleFunc("/api/users", handleUsers)
+
+cfg := logdot.DefaultMiddlewareConfig()
+cfg.Logger = logger
+cfg.Metrics = metrics
+cfg.EntityName = "my-service"
+cfg.IgnorePaths = []string{"/health", "/ready"}
+
+handler := logdot.Middleware(cfg)(mux)
+http.ListenAndServe(":8080", handler)
+```
+
+### What Gets Captured
+
+- **HTTP requests**: Every request logged with method, path, status code, duration
+- **Errors**: 5xx responses logged as error severity, 4xx as warn
+- **Metrics**: Response time per endpoint — entity is automatically created/resolved on first request (when Metrics configured)
+
+### Configuration
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `Logger` | `*Logger` | required | LogDot logger instance |
+| `Metrics` | `*Metrics` | nil | Metrics instance (enables duration metrics) |
+| `EntityName` | `string` | hostname | Metrics entity name — automatically created if it doesn't exist |
+| `LogRequests` | `bool` | true | Enable request logging |
+| `LogMetrics` | `bool` | true | Enable duration metrics |
+| `IgnorePaths` | `[]string` | [] | Paths to skip |
+
+### Compatible Frameworks
+
+The middleware uses the standard `func(http.Handler) http.Handler` pattern and works with:
+
+- `net/http` (standard library)
+- [Chi](https://github.com/go-chi/chi) — `r.Use(logdot.Middleware(cfg))`
+- [Gorilla Mux](https://github.com/gorilla/mux) — `r.Use(logdot.Middleware(cfg))`
+- Any router that supports `http.Handler` middleware
+
+## Log Capture (slog)
+
+Forward Go's structured logging (`log/slog`) to LogDot automatically.
+
+### Setup
+
+```go
+logger := logdot.NewLogger("ilog_live_YOUR_API_KEY", "my-service")
+
+// One-liner setup
+logdot.SetSlogCapture(logger)
+
+// Or configure manually
+slog.SetDefault(slog.New(logdot.NewSlogHandler(logger,
+    logdot.WithSlogLevel(slog.LevelInfo),
+)))
+```
+
+### What Gets Captured
+
+- All `slog.Info()`, `slog.Warn()`, `slog.Error()`, `slog.Debug()` calls
+- Structured attributes are forwarded as LogDot tags
+- Groups are flattened with dot notation (e.g. `request.method`)
+
+### Level Mapping
+
+| slog Level | LogDot Severity |
+|-----------|----------------|
+| `LevelDebug` | `debug` |
+| `LevelInfo` | `info` |
+| `LevelWarn` | `warn` |
+| `LevelError` | `error` |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `WithSlogLevel(level)` | Minimum slog level to forward (default: `LevelDebug`) |
+
 ## API Reference
 
 ### Logger
@@ -240,6 +328,47 @@ metricsClient.EndBatch()
 | `AddMetric(name, value, unit, tags)` | Add metric to batch |
 | `SendBatch(ctx)` | Send queued metrics |
 | `EndBatch()` | End batch mode |
+
+### Middleware
+
+| Function | Description |
+|----------|-------------|
+| `Middleware(config)` | Create HTTP middleware handler |
+| `DefaultMiddlewareConfig()` | Config with `LogRequests: true, LogMetrics: true` |
+
+### SlogHandler
+
+| Function | Description |
+|----------|-------------|
+| `NewSlogHandler(logger, opts...)` | Create slog.Handler for LogDot |
+| `SetSlogCapture(logger, opts...)` | Install as default slog handler |
+| `WithSlogLevel(level)` | Set minimum log level |
+
+## Examples
+
+Create a `.env` file in the repo root with your API key:
+
+```
+LOGDOT_API_KEY=ilog_live_YOUR_API_KEY
+```
+
+### Core SDK test app
+
+Tests logging, metrics, context, and batch operations:
+
+```bash
+cd golang
+go run ./examples/main.go
+```
+
+### Hooks test app (HTTP Middleware + slog)
+
+Tests HTTP middleware and slog log capture:
+
+```bash
+cd golang/examples/hooks
+go run ./main.go
+```
 
 ## License
 
